@@ -2,6 +2,7 @@
 
 from itertools import product
 
+
 def main():
     xs = open('in.txt', 'r').readlines()
     xs = list(map(int, xs))

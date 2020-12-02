@@ -2,6 +2,7 @@
 
 from itertools import product
 
+
 def main():
     xs = open('in.txt', 'r').readlines()
     xs = list(map(int, xs))
@@ -11,7 +12,6 @@ def main():
                     if a + b == 2020)
 
     print(solution)
-
 
 
 if __name__ == '__main__':
