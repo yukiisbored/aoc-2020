@@ -1,23 +1,10 @@
+#!/usr/bin/env python3
+
 from itertools import product
 
-
-def get_numbers(filename):
-    res = list()
-
-    with open(filename, 'r') as f:
-        while True:
-            buf = f.readline()
-            if buf:
-                buf = int(buf)
-                res.append(buf)
-            else:
-                break
-
-    return res
-
-
 def main():
-    xs = get_numbers('in.txt')
+    xs = open('in.txt', 'r').readlines()
+    xs = list(map(int, xs))
 
     solution = next(a * b
                     for (a, b) in product(xs, xs)
