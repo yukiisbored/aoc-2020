@@ -5,3 +5,8 @@ it's not bad idea to share your solutions and compare with others to
 improve your code.
 
 Of course, don't just leech my solutions, Take a shot at it first! :-)
+
+## Languages used
+
+* Haskell
+* Python 3
