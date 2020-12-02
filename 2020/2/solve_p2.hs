@@ -13,11 +13,11 @@ isValid :: PasswordCheck -> Bool
 isValid (Check low high ch t)  = lowValid /= highValid
   where lowIndex = low - 1
         highIndex = high - 1
-        lowValid = (T.index t lowIndex) == ch
-        highValid = (T.index t highIndex) == ch
+        lowValid = T.index t lowIndex == ch
+        highValid = T.index t highIndex == ch
 
 parse :: T.Text -> PasswordCheck
-parse s = (Check low high ch password)
+parse s = Check low high ch password
   where xs = T.words s
         [boundT, charT, password] = xs
         [Right (low, _), Right (high, _)] = map decimal (T.splitOn "-" boundT)

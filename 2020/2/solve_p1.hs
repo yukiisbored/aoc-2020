@@ -14,7 +14,7 @@ isValid (Check low high ch t)  = count >= low && count <= high
   where count = (T.length . T.filter (== ch)) t
 
 parse :: T.Text -> PasswordCheck
-parse s = (Check low high ch password)
+parse s = Check low high ch password
   where xs = T.words s
         [boundT, charT, password] = xs
         [Right (low, _), Right (high, _)] = map decimal (T.splitOn "-" boundT)
