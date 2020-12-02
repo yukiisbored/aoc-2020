@@ -7,4 +7,4 @@ main = do
   let nums = map (\x -> read x :: Int) $ lines content
       solution = head [x * y | x <- nums, y <- nums, x + y == 2020]
 
-  (putStrLn . show) solution
+  print solution

@@ -29,4 +29,4 @@ main = do
 
   let res = (length . filter id) $ map (isValid . parse) entries
 
-  (putStrLn . show) res
+  print res
