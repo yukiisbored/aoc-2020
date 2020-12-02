@@ -1,19 +1,8 @@
 #!/usr/bin/env python3
 
-def read_lines(filename):
-    with open('in.txt') as f:
-        while True:
-            buf = f.readline()
-
-            if buf:
-                yield buf
-            else:
-                break
-
-
 def parse(line):
-    [bound, char, password] = line.split(' ')
-    [low, high] = bound.split('-')
+    bound, char, password = line.split(' ')
+    low, high = bound.split('-')
     low, high = int(low), int(high)
     char = char[0]
 
@@ -26,7 +15,7 @@ def is_valid(low, high, char, password):
 
 
 def main():
-    res = read_lines('in.txt')
+    res = open('in.txt', 'r').readlines()
     res = map(parse, res)
     res = map(lambda p: is_valid(*p), res)
     res = sum(1 for x in res if x)
