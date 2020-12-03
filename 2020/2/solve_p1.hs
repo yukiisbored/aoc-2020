@@ -4,7 +4,7 @@
 
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Data.Text.Read
+import Data.Text.Read (decimal)
 
 data PasswordCheck = Check Int Int Char T.Text
                    deriving (Show)
