@@ -40,16 +40,11 @@ hairColorValid :: Passport -> Bool
 hairColorValid p = prefix == "#" && T.length color == 6 && isRight (TR.hexadecimal color)
   where (prefix, color) = T.splitAt 1 $ p M.! "hcl"
 
+validColors :: [T.Text]
+validColors = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
+
 eyeColorValid :: Passport -> Bool
-eyeColorValid p
-  | color == "amb" = True
-  | color == "blu" = True
-  | color == "brn" = True
-  | color == "gry" = True
-  | color == "grn" = True
-  | color == "hzl" = True
-  | color == "oth" = True
-  | otherwise      = False
+eyeColorValid p = color `elem` validColors
   where color = p M.! "ecl"
 
 passportIDValid :: Passport -> Bool
