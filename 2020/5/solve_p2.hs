@@ -1,8 +1,5 @@
 #!/usr/bin/env runhaskell
-import Data.Maybe ( catMaybes
-                  , mapMaybe )
-import qualified Data.Set as S
-import Data.List (sort)
+import Data.Maybe ( mapMaybe )
 
 subdivide :: [Bool] -> [Int] -> Maybe Int
 
