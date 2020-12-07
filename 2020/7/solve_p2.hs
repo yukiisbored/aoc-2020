@@ -56,7 +56,7 @@ makeGraph = fromArcsList . foldMap makeArcs
   where makeArcs (src, dests) = map (uncurry (Arc src)) dests
 
 crawl' :: DGraph String Int -> String -> Int
-crawl' graph baby = succ $ sum $ map (\(Arc _ d weight) -> weight * crawl graph d) $ outboundingArcs graph baby
+crawl' graph baby = succ $ sum $ map (\(Arc _ d weight) -> weight * crawl' graph d) $ outboundingArcs graph baby
 
 crawl :: DGraph String Int -> String -> Int
 crawl graph baby = pred $ crawl' graph baby
