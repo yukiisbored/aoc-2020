@@ -6,9 +6,11 @@ import Control.Lens (element, set,  (^?), (^.), over, makeLenses, Ixed(ix) )
 import Text.Parsec.String (Parser)
 import Text.Parsec
     (string, choice,  digit, oneOf, spaces, endBy, eof, many1, parse )
-import Data.Maybe (isJust)
+import Data.Maybe (isNothing)
 import qualified Data.Vector as V
 import qualified Data.Set as S
+import Control.Monad.State.Strict
+    ( modify, execState, MonadState(get), State )
 
 type Op = Int
 
@@ -19,19 +21,20 @@ data Instruction = Nop Op
 
 type Program = V.Vector Instruction
 
-data State = Run
-           | CyclicHalt
-           | Halt
-           deriving (Show, Eq)
+data CPUStatus = Run
+               | CyclicHalt
+               | Halt
+               deriving (Show, Eq)
 
-data CPU = CPU { _pc      :: Int
-               , _acc     :: Int
-               , _visited :: S.Set Int
-               , _state   :: State
-               , _program :: Program }
-         deriving (Show)
+data CPUState = CPUState { _pc      :: Int
+                         , _acc     :: Int
+                         , _visited :: S.Set Int
+                         , _status   :: CPUStatus
+                         , _program :: Program }
+              deriving (Show)
+$(makeLenses ''CPUState)
 
-$(makeLenses ''CPU)
+type CPU a = State CPUState a
 
 operand :: Parser Int
 operand = do
@@ -57,38 +60,39 @@ instruction = do
 assembly :: Parser Program
 assembly = V.fromList <$> instruction `endBy` spaces <* eof
 
-initCPU :: Program -> CPU
-initCPU prog = CPU { _pc      = 0
-                   , _acc     = 0
-                   , _visited = S.empty
-                   , _state   = Run
-                   , _program = prog }
+execute' :: CPU ()
+execute' = do
+  cpu <- get
 
-execute :: CPU -> CPU
-execute cpu = if continue then (execute . execute' ins)
-                               (over visited (S.insert (cpu^.pc)) cpu)
-              else set state (if cyclicCheck then CyclicHalt else Halt) cpu
-  where ins = cpu^.program^?ix (cpu^.pc)
+  let ins = cpu^.program^?ix (cpu^.pc)
+      cyclicCheck = (cpu^.pc) `S.member` (cpu^.visited)
+      halt = cyclicCheck || isNothing ins
 
-        cyclicCheck = (cpu^.pc) `S.member` (cpu^.visited)
-        continue = not cyclicCheck && isJust ins
+  if halt
+    then do
+      modify $ set status (if cyclicCheck then CyclicHalt else Halt)
+      return ()
+    else do
+      modify (over visited (S.insert (cpu^.pc)))
+      case ins of
+        Just (Jmp op) -> modify (over pc (+ op))
+        Just (Acc op) -> modify (over pc (+ 1) . over acc (+ op))
+        Just (Nop _)  -> modify (over pc (+ 1))
+      execute'
 
-        execute' :: Maybe Instruction -> CPU -> CPU
-        execute' (Just (Jmp op)) = over pc (+ op)
-        execute' (Just (Acc op)) = over pc (+ 1) . over acc (+ op)
-        execute' (Just (Nop _))  = over pc (+ 1)
-        execute' Nothing         = id
+execute :: Program -> CPUState
+execute prog = execState execute' (CPUState 0 0 S.empty Run prog)
 
 patch :: Instruction -> Instruction
 patch (Jmp op) = Nop op
 patch (Nop op) = Jmp op
 patch a = a
 
-bruteforce :: Program -> CPU
+bruteforce :: Program -> CPUState
 bruteforce prog = head $ [cpu' | i <- [0..(length prog - 1)]
                                , let prog' = over (element i) patch prog
-                               , let cpu' = execute $ initCPU prog'
-                               , cpu'^.state == Halt]
+                               , let cpu' = execute prog'
+                               , cpu'^.status == Halt]
 
 main :: IO ()
 main = do
@@ -100,4 +104,4 @@ main = do
 
   case program' of
     Left err      -> print err
-    Right program -> print (bruteforce program^.acc)
+    Right program -> print $ bruteforce program^.acc
