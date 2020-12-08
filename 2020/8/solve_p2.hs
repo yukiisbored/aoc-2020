@@ -8,6 +8,7 @@ import Text.Parsec
     (string, choice,  digit, oneOf, spaces, endBy, eof, many1, parse )
 import Data.Maybe (isJust)
 import qualified Data.Vector as V
+import qualified Data.Set as S
 
 type Op = Int
 
@@ -25,7 +26,7 @@ data State = Run
 
 data CPU = CPU { _pc      :: Int
                , _acc     :: Int
-               , _visited :: [Int]
+               , _visited :: S.Set Int
                , _state   :: State }
          deriving (Show)
 
@@ -59,17 +60,17 @@ assembly = V.fromList <$> instruction `endBy` spaces <* eof
 initCPU :: CPU
 initCPU = CPU { _pc      = 0
               , _acc     = 0
-              , _visited = []
+              , _visited = S.empty
               , _state   = Run }
 
 execute :: Program -> CPU -> CPU
 execute prog cpu = if continue then (execute prog . execute' ins)
-                                    (over visited (cpu^.pc:) cpu)
+                                    (over visited (S.insert (cpu^.pc)) cpu)
                    else set state (if cyclicCheck then CyclicHalt else Halt) cpu
 
   where ins = prog^?ix (cpu^.pc)
 
-        cyclicCheck = cpu^.pc `elem` (cpu^.visited)
+        cyclicCheck = (cpu^.pc) `S.member` (cpu^.visited)
         continue = not cyclicCheck && isJust ins
 
         execute' :: Maybe CPUInstruction -> CPU -> CPU
