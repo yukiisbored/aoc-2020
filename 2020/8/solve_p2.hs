@@ -27,11 +27,11 @@ data State = Run
 data CPU = CPU { _pc      :: Int
                , _acc     :: Int
                , _visited :: S.Set Int
-               , _state   :: State }
+               , _state   :: State
+               , _program :: Program }
          deriving (Show)
 
 $(makeLenses ''CPU)
-
 
 operand :: Parser Int
 operand = do
@@ -57,18 +57,18 @@ instruction = do
 assembly :: Parser Program
 assembly = V.fromList <$> instruction `endBy` spaces <* eof
 
-initCPU :: CPU
-initCPU = CPU { _pc      = 0
-              , _acc     = 0
-              , _visited = S.empty
-              , _state   = Run }
+initCPU :: Program -> CPU
+initCPU prog = CPU { _pc      = 0
+                   , _acc     = 0
+                   , _visited = S.empty
+                   , _state   = Run
+                   , _program = prog }
 
-execute :: Program -> CPU -> CPU
-execute prog cpu = if continue then (execute prog . execute' ins)
-                                    (over visited (S.insert (cpu^.pc)) cpu)
-                   else set state (if cyclicCheck then CyclicHalt else Halt) cpu
-
-  where ins = prog^?ix (cpu^.pc)
+execute :: CPU -> CPU
+execute cpu = if continue then (execute . execute' ins)
+                               (over visited (S.insert (cpu^.pc)) cpu)
+              else set state (if cyclicCheck then CyclicHalt else Halt) cpu
+  where ins = cpu^.program^?ix (cpu^.pc)
 
         cyclicCheck = (cpu^.pc) `S.member` (cpu^.visited)
         continue = not cyclicCheck && isJust ins
@@ -85,9 +85,10 @@ patch (Nop op) = Jmp op
 patch a = a
 
 bruteforce :: Program -> CPU
-bruteforce program = head $ [cpu | i <- [0..(length program - 1)]
-                                 , let cpu = execute (over (element i) patch program) initCPU
-                                 , cpu^.state == Halt]
+bruteforce prog = head $ [cpu' | i <- [0..(length prog - 1)]
+                               , let prog' = over (element i) patch prog
+                               , let cpu' = execute $ initCPU prog'
+                               , cpu'^.state == Halt]
 
 main :: IO ()
 main = do
