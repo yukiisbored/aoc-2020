@@ -5,8 +5,9 @@
 import Control.Lens (element, set,  (^?), (^.), over, makeLenses, Ixed(ix) )
 import Text.Parsec.String (Parser)
 import Text.Parsec
-    ( digit, letter, oneOf, spaces, endBy, eof, many1, parse )
+    (string, choice,  digit, letter, oneOf, spaces, endBy, eof, many1, parse )
 import Data.Maybe (isJust)
+import Data.Either (isRight)
 
 type Op = Int
 
@@ -44,14 +45,13 @@ operand = do
 
 instruction :: Parser CPUInstruction
 instruction = do
-  ins <- many1 letter <* spaces
+  ins <- choice (string <$> ["nop", "jmp", "acc"]) <* spaces
   op <- operand
 
   case ins of
     "nop" -> return $ Nop op
     "jmp" -> return $ Jmp op
     "acc" -> return $ Acc op
-    _     -> error "Unknown instruction"
 
 assembly :: Parser [CPUInstruction]
 assembly = instruction `endBy` spaces <* eof
@@ -95,7 +95,8 @@ main = do
 
   raw <- readFile fileName
 
-  let Right program = parse assembly fileName raw
-      cpu = bruteforce program
+  let program' = parse assembly fileName raw
 
-  print (cpu^.acc)
+  case program' of
+    Left err      -> print err
+    Right program -> print (bruteforce program^.acc)
