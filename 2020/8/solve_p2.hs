@@ -5,9 +5,8 @@
 import Control.Lens (element, set,  (^?), (^.), over, makeLenses, Ixed(ix) )
 import Text.Parsec.String (Parser)
 import Text.Parsec
-    (string, choice,  digit, letter, oneOf, spaces, endBy, eof, many1, parse )
+    (string, choice,  digit, oneOf, spaces, endBy, eof, many1, parse )
 import Data.Maybe (isJust)
-import Data.Either (isRight)
 
 type Op = Int
 
