@@ -83,8 +83,7 @@ execute' = do
       halt = cyclicCheck || isNothing ins
 
   if halt
-    then do
-      modify $ set status (if cyclicCheck then CyclicHalt else Halt)
+    then modify $ set status (if cyclicCheck then CyclicHalt else Halt)
     else do
       visit
       case ins of
