@@ -27,9 +27,9 @@ data CPUStatus = Run
                deriving (Show, Eq)
 
 data CPUState = CPUState { _pc      :: Int
-                         , _acc     :: Int
+                         , _reg     :: Int
                          , _visited :: S.Set Int
-                         , _status   :: CPUStatus
+                         , _status  :: CPUStatus
                          , _program :: Program }
               deriving (Show)
 $(makeLenses ''CPUState)
@@ -60,6 +60,20 @@ instruction = do
 assembly :: Parser Program
 assembly = V.fromList <$> instruction `endBy` spaces <* eof
 
+visit :: CPU ()
+visit = do
+  cpu <- get
+  modify (over visited (S.insert (cpu^.pc)))
+
+jmp :: Int -> CPU ()
+jmp op = modify $ over pc (+ op)
+
+acc :: Int -> CPU ()
+acc op = modify (over pc (+ 1) . over reg (+ op))
+
+nop :: CPU ()
+nop = modify $ over pc (+ 1)
+
 execute' :: CPU ()
 execute' = do
   cpu <- get
@@ -71,13 +85,12 @@ execute' = do
   if halt
     then do
       modify $ set status (if cyclicCheck then CyclicHalt else Halt)
-      return ()
     else do
-      modify (over visited (S.insert (cpu^.pc)))
+      visit
       case ins of
-        Just (Jmp op) -> modify (over pc (+ op))
-        Just (Acc op) -> modify (over pc (+ 1) . over acc (+ op))
-        Just (Nop _)  -> modify (over pc (+ 1))
+        Just (Jmp op) -> jmp op
+        Just (Acc op) -> acc op
+        Just (Nop _)  -> nop
       execute'
 
 execute :: Program -> CPUState
@@ -104,4 +117,4 @@ main = do
 
   case program' of
     Left err      -> print err
-    Right program -> print $ bruteforce program^.acc
+    Right program -> print $ bruteforce program^.reg
