@@ -85,9 +85,9 @@ patch (Nop op) = Jmp op
 patch a = a
 
 bruteforce :: Program -> CPU
-bruteforce program =
-  head . filter (\x -> x^.state == Halt)
-  $ execute <$> [over (element i) patch program | i <- [0..(length program - 1)]] <*> pure initCPU
+bruteforce program = head $ [cpu | i <- [0..(length program - 1)]
+                                 , let cpu = execute (over (element i) patch program) initCPU
+                                 , cpu^.state == Halt]
 
 main :: IO ()
 main = do
