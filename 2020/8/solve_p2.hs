@@ -7,6 +7,7 @@ import Text.Parsec.String (Parser)
 import Text.Parsec
     (string, choice,  digit, oneOf, spaces, endBy, eof, many1, parse )
 import Data.Maybe (isJust)
+import qualified Data.Vector as V
 
 type Op = Int
 
@@ -15,7 +16,7 @@ data CPUInstruction = Nop Op
                     | Acc Op
                     deriving (Show, Eq)
 
-type Program = [CPUInstruction]
+type Program = V.Vector CPUInstruction
 
 data State = Run
            | CyclicHalt
@@ -52,8 +53,8 @@ instruction = do
     "jmp" -> return $ Jmp op
     "acc" -> return $ Acc op
 
-assembly :: Parser [CPUInstruction]
-assembly = instruction `endBy` spaces <* eof
+assembly :: Parser Program
+assembly = V.fromList <$> instruction `endBy` spaces <* eof
 
 initCPU :: CPU
 initCPU = CPU { _pc      = 0
@@ -62,7 +63,6 @@ initCPU = CPU { _pc      = 0
               , _state   = Run }
 
 execute :: Program -> CPU -> CPU
-execute []   cpu = cpu
 execute prog cpu = if continue then (execute prog . execute' ins)
                                     (over visited (cpu^.pc:) cpu)
                    else set state (if cyclicCheck then CyclicHalt else Halt) cpu
