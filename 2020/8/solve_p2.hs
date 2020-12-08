@@ -12,12 +12,12 @@ import qualified Data.Set as S
 
 type Op = Int
 
-data CPUInstruction = Nop Op
+data Instruction = Nop Op
                     | Jmp Op
                     | Acc Op
                     deriving (Show, Eq)
 
-type Program = V.Vector CPUInstruction
+type Program = V.Vector Instruction
 
 data State = Run
            | CyclicHalt
@@ -44,7 +44,7 @@ operand = do
 
   return num
 
-instruction :: Parser CPUInstruction
+instruction :: Parser Instruction
 instruction = do
   ins <- choice (string <$> ["nop", "jmp", "acc"]) <* spaces
   op <- operand
@@ -73,13 +73,13 @@ execute prog cpu = if continue then (execute prog . execute' ins)
         cyclicCheck = (cpu^.pc) `S.member` (cpu^.visited)
         continue = not cyclicCheck && isJust ins
 
-        execute' :: Maybe CPUInstruction -> CPU -> CPU
+        execute' :: Maybe Instruction -> CPU -> CPU
         execute' (Just (Jmp op)) = over pc (+ op)
         execute' (Just (Acc op)) = over pc (+ 1) . over acc (+ op)
         execute' (Just (Nop _))  = over pc (+ 1)
         execute' Nothing         = id
 
-patch :: CPUInstruction -> CPUInstruction
+patch :: Instruction -> Instruction
 patch (Jmp op) = Nop op
 patch (Nop op) = Jmp op
 patch a = a
