@@ -1,6 +1,5 @@
 #!/usr/bin/env runhaskell
 
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 import Control.Lens (element, set,  (^?), (^.), over, makeLenses, Ixed(ix) )
