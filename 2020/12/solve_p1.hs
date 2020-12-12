@@ -66,17 +66,17 @@ commands :: Parser [Command]
 commands = spaces *> command `endBy` spaces <* eof
 
 move :: Ship -> Command -> Ship
-move   ((x, y), c) (Move North n) = ((x    , y + n), c)
-move   ((x, y), c) (Move East  n) = ((x + n, y    ), c)
-move   ((x, y), c) (Move South n) = ((x    , y - n), c)
-move   ((x, y), c) (Move West  n) = ((x - n, y    ), c)
+move ((x, y), c) (Move North n) = ((x    , y + n), c)
+move ((x, y), c) (Move East  n) = ((x + n, y    ), c)
+move ((x, y), c) (Move South n) = ((x    , y - n), c)
+move ((x, y), c) (Move West  n) = ((x - n, y    ), c)
 
-move   (    xy, c) (Rotate R   n) = (            xy, c')
+move (xy, c) (Rotate R n) = (xy, c')
   where c' :: Cardinal
         c' = toEnum $ (fromEnum c + n) `mod` 4
 
-move s@((_, _), c) (Forward    n) = move s $ Move c n
-move s             (Rotate L   n) = move s $ Rotate R (4 - n)
+move s@((_, _), c) (Forward  n) = move s $ Move c n
+move s             (Rotate L n) = move s $ Rotate R (4 - n)
 
 manhattan :: Ship -> Int
 manhattan ((x, y), _) = abs x + abs y
