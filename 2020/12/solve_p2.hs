@@ -77,16 +77,16 @@ rotate (x, y) 3 = (-y,  x)
 rotate l      m = rotate l $ m `mod` 4
 
 move :: Ship -> Command -> Ship
-move   ((x', y'), l) (Move North n) = ((x'    , y' + n), l)
-move   ((x', y'), l) (Move East  n) = ((x' + n, y'    ), l)
-move   ((x', y'), l) (Move South n) = ((x'    , y' - n), l)
-move   ((x', y'), l) (Move West  n) = ((x' - n, y'    ), l)
+move ((x', y'), l) (Move North n) = ((x'    , y' + n), l)
+move ((x', y'), l) (Move East  n) = ((x' + n, y'    ), l)
+move ((x', y'), l) (Move South n) = ((x'    , y' - n), l)
+move ((x', y'), l) (Move West  n) = ((x' - n, y'    ), l)
 
-move   ((x', y'), (x, y)) (Forward n) = ((x', y'), (x + (x' * n), y + (y' * n)))
+move ((x', y'), (x, y)) (Forward n) = ((x', y'), (x + (x' * n), y + (y' * n)))
 
-move   (w, l) (Rotate R m) = (rotate w m, l)
+move (w, l) (Rotate R m) = (rotate w m, l)
 
-move   s (Rotate L m) = move s $ Rotate R (-m)
+move s (Rotate L m) = move s $ Rotate R (-m)
 
 manhattan :: Ship -> Int
 manhattan (_, (x, y)) = abs x + abs y
