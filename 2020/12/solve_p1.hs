@@ -75,7 +75,7 @@ move (xy, c) (Rotate R n) = (xy, c')
   where c' :: Cardinal
         c' = toEnum $ (fromEnum c + n) `mod` 4
 
-move s@((_, _), c) (Forward  n) = move s $ Move c n
+move s@((_, _), c) (Forward  n) = move s $ Move   c      n
 move s             (Rotate L n) = move s $ Rotate R (4 - n)
 
 manhattan :: Ship -> Int
