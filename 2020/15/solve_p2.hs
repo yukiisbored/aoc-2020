@@ -66,8 +66,8 @@ main :: IO ()
 main = do
   raw <- TIO.readFile "in.txt"
 
-  let xs = parse raw
-      s  = execState (unGame (playUntil 30000000)) (initState xs)
+  let xs   = parse raw
+      s    = execState (unGame (playUntil 30000000)) (initState xs)
       y:_  = numbers s
 
   print y
