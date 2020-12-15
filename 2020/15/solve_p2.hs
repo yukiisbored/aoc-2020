@@ -28,34 +28,21 @@ initState xs = GameState { previous = M.fromList turns
         turns = zipWith (curry $ second (:[])) xs [1..]
         t     = length xs
 
-newNumber :: GameState -> (Int, [Int])
-newNumber state = (n, turn':prevs)
-  where n          = 0
-        turn'      = succ $ turn state
-        Just prevs = M.lookup n $ previous state
-
-oldNumber :: GameState -> (Int, [Int])
-oldNumber state = (n, turn':prevs)
-  where c:_          = numbers state
-        Just (x:y:_) = M.lookup c $ previous state
-        n            = x - y
-        turn'        = succ $ turn state
-        prevs        = fromMaybe [] $ M.lookup n $ previous state
-
-nextNumber :: GameState -> GameState
-nextNumber state = GameState { previous = M.insert n ps' $ previous state
-                             , numbers  = n : numbers state
-                             , turn     = turn' }
-  where c:_   = numbers state
-        turn' = succ $ turn state
+next :: GameState -> GameState
+next state = GameState { previous = M.insert n ps' $ previous state
+                       , numbers  = n : numbers state
+                       , turn     = turn' }
+  where c:_     = numbers state
+        turn'   = succ $ turn state
         Just ps = M.lookup c $ previous state
-        (n, ps') = case ps of
-                     _:_:_ -> oldNumber state
-                     _:_   -> newNumber state
+        n       = case ps of
+                    x:y:_ -> x - y
+                    _:_   -> 0
+        ps'     = turn' : fromMaybe [] (M.lookup n $ previous state)
 
 playUntil :: Int -> Game ()
 playUntil x = do
-  modify nextNumber
+  modify next
   s <- get
   when (turn s < x) $ playUntil x
 
