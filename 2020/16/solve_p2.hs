@@ -92,8 +92,6 @@ initFinder :: M.Map Int (S.Set String) -> FinderState
 initFinder u = FinderState { _confirmed = M.empty
                            , _unconfirmed = u }
 
--- TODO: Stop using a State Monad :')
-
 strikeConfirmed :: Finder ()
 strikeConfirmed = do
   st <- get
