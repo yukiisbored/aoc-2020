@@ -1,24 +1,19 @@
 #!/usr/bin/env runhaskell
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 import Data.Bifunctor (second)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Text.Read as TR
 import Data.Either (rights)
-import qualified Data.Map.Strict as M
+import qualified Data.Map.Lazy as M
 import Data.Maybe (fromMaybe)
-import Control.Monad.State.Strict (when, execState, get, modify, MonadState, State)
 
 data GameState = GameState { previous :: M.Map Int [Int]
                            , numbers  :: [Int]
                            , turn     :: Int }
                deriving (Show)
-
-newtype Game a = Game { unGame :: State GameState a}
-  deriving (Functor, Applicative, Monad, MonadState GameState)
 
 initState :: [Int] -> GameState
 initState xs = GameState { previous = M.fromList turns
@@ -40,11 +35,9 @@ next state = GameState { previous = M.insert n ps' $ previous state
                     _:_   -> 0
         ps'     = turn' : fromMaybe [] (M.lookup n $ previous state)
 
-playUntil :: Int -> Game ()
-playUntil x = do
-  modify next
-  s <- get
-  when (turn s < x) $ playUntil x
+playUntil :: Int -> GameState -> GameState
+playUntil times init = foldl (flip ($)) init (replicate times' next)
+  where times' = times - turn init
 
 parse :: T.Text -> [Int]
 parse = map fst . rights . map TR.decimal . T.splitOn "," . head . T.lines
@@ -54,7 +47,7 @@ main = do
   raw <- TIO.readFile "in.txt"
 
   let xs   = parse raw
-      s    = execState (unGame (playUntil 2020)) (initState xs)
+      s    = playUntil 2020 (initState xs)
       y:_  = numbers s
 
   print y
