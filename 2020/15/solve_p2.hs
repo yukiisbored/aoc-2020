@@ -8,9 +8,9 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Text.Read as TR
 import Data.Either (rights)
-import qualified Data.Map.Strict as M
+import qualified Data.Map.Lazy as M
 import Data.Maybe (fromMaybe)
-import Control.Monad.State.Strict (when, execState, get, modify, MonadState, State)
+import Control.Monad.State.Lazy (when, execState, get, modify, MonadState, State)
 
 data GameState = GameState { previous :: M.Map Int [Int]
                            , numbers  :: [Int]
